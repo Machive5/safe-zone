@@ -6,13 +6,14 @@
 #include <string>
 #include <iostream>
 
-class Character {
+class Character { //this is base class for all characters
     public:
         std::string name;
         int level;
         int health;
         int atk;
         int speed;
+        float jump_force = 0;
 
         float posX = 0;
         float posY = 0;
@@ -28,7 +29,7 @@ class Character {
         virtual void update() = 0; 
 };
 
-class Animation {
+class Animation { //this is tools for controlling animations
     private:
         std::string texture_directory;
         std::string type;
@@ -82,6 +83,8 @@ class Animation {
         }
 };
 
+//------------------------------ creating character class ------------------------------
+
 class Player: public Character {
     private:
         float frame_rate;
@@ -92,12 +95,11 @@ class Player: public Character {
     public:
         sf::Sprite sprite;
         sf::RectangleShape boundingBox = sf::RectangleShape(sf::Vector2f(30, 70));
-        float jump_force = 0;
 
         Player(float frame_rate, float initPosX=0, float initPosY=0): Character("Emma", 1, 100, 10, 100) {
             this->frame_rate = frame_rate;
-            this->run_animation = Animation("./sprite/player", "run", true, &this->sprite, this->frame_rate, 2.0f);
-            this->idle_animation = Animation("./sprite/player", "idle", true, &this->sprite, this->frame_rate, 2.0f);
+            this->run_animation = Animation("../assets/sprite/player", "run", true, &this->sprite, this->frame_rate, 2.0f);
+            this->idle_animation = Animation("../assets/sprite/player", "idle", true, &this->sprite, this->frame_rate, 2.0f);
 
             scaleX = idle_animation.rescale;
             
