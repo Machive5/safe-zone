@@ -7,10 +7,13 @@
 class Scene1: public Scene, public State {
     private:
         Player* player;
+        Zombie *zombie1; 
 
         // Directional keys
         char horizDir = '\0'; // 'A' for left, 'D' for right
         char vertDir = '\0'; // 'W' for up, 'S' for down
+        sf::Vector2<float> mousePos;
+        bool fire = false;
 
         // Gravity force
         const float gravityForce = 980.0f; // Adjust as needed for your game physics
@@ -20,6 +23,8 @@ class Scene1: public Scene, public State {
         Scene1(sf::RenderWindow* window, float frame_rate = (1.0f / 60.0f), std::string groundFile="", std::string directory="", std::string layerFiles="")
         :Scene(window, frame_rate, 500.0f, groundFile, directory, layerFiles) {
             player = new Player(frame_rate, 100, window->getSize().y - 100);
+            zombie1 = new Zombie1(frame_rate, 500, window->getSize().y - 100);
+
             groundBoundingBox.setOrigin(0,groundBoundingBox.getSize().y);
             groundBoundingBox.setFillColor(sf::Color::Transparent);
             groundBoundingBox.setOutlineColor(sf::Color::Blue);
@@ -32,6 +37,7 @@ class Scene1: public Scene, public State {
 
         void update() override {
             gravity(player, true);
+            gravity(zombie1, false);
             player->idle();
             
             switch (horizDir) {
@@ -83,12 +89,23 @@ class Scene1: public Scene, public State {
             }
 
             switch (vertDir){
-                case 'W':
+                case 'Z':
                     if (isGrounded) {
                         player->jump_force = 800.0f;
                         isJumping = true;
                     }
                     break;
+            }
+
+            if (fire){
+                player->atk();
+            }
+
+            if (fire && horizDir == 'D'){
+                player->runAndGunRight();
+            }
+            else if (fire && horizDir == 'A'){
+                player->runAndGunLeft();
             }
         }
 
@@ -109,35 +126,40 @@ class Scene1: public Scene, public State {
         void handle_event(sf::Event event) override {
             if (event.type == sf::Event::KeyPressed) {
                 switch (event.key.code) {
-                    case sf::Keyboard::A:
+                    case sf::Keyboard::Left:
                         horizDir = 'A';
                         break;
-                    case sf::Keyboard::D:
+                    case sf::Keyboard::Right:
                         horizDir = 'D';
                         break;
-                    case sf::Keyboard::W:
-                        vertDir = 'W';
-                        break;
-                    case sf::Keyboard::S:
-                        vertDir = 'S';
+                    case sf::Keyboard::Z:
+                        vertDir = 'Z';
                         break;
                     default:
                         break;
                 }
-            } else if (event.type == sf::Event::KeyReleased) {
+            }else if (event.type == sf::Event::KeyReleased) {
                 switch (event.key.code) {
-                    case sf::Keyboard::A:
-                    case sf::Keyboard::D:
+                    case sf::Keyboard::Left:
                         horizDir = '\0';
                         break;
-                    case sf::Keyboard::W:
-                    case sf::Keyboard::S:
+                    case sf::Keyboard::Right:
+                        horizDir = '\0';
+                        break;
+                    case sf::Keyboard::Z:
                         vertDir = '\0';
                         break;
                     default:
                         break;
                 }
             }
+
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::X) {
+                fire = true;
+            }else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::X) {
+                fire = false;
+            }
+
         }
 
         int get_next_state() override {

@@ -3,6 +3,6 @@
 
 int main ()
 {
-    Game g { "Pong Program", screen_width, screen_height };
+    Game g { "Safe Zone", screen_width, screen_height };
     g.start ();
 }

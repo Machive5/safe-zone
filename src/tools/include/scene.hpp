@@ -23,8 +23,8 @@ class Scene {
         float gravityForce;
         float frame_rate;
 
-        void gravity(Player* player, bool jump = false) {
-            sf::FloatRect playerBounds = player->boundingBox.getGlobalBounds();
+        void gravity(Character* character, bool jump = false) {
+            sf::FloatRect playerBounds = character->boundingBox.getGlobalBounds();
             sf::FloatRect groundBounds = groundBoundingBox.getGlobalBounds();
             isGrounded = playerBounds.intersects(groundBounds);
             
@@ -34,17 +34,17 @@ class Scene {
                 //for jump effect
                 
                 if (jump){
-                    player->jump_force -= gravityForce * frame_rate;
-                    if (player->jump_force < 0) {
-                        player->jump_force = 0;
+                    character->jump_force -= gravityForce * frame_rate;
+                    if (character->jump_force < 0) {
+                        character->jump_force = 0;
                     }
 
-                    finalForce = gravityForce - player->jump_force;
+                    finalForce = gravityForce - character->jump_force;
                 }
 
-                player->posY += finalForce * frame_rate;
+                character->posY += finalForce * frame_rate;
 
-                player->update();
+                character->update();
 
                 isJumping = false;
             }

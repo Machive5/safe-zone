@@ -18,6 +18,8 @@ class Character { //this is base class for all characters
         float posX = 0;
         float posY = 0;
 
+        sf::RectangleShape boundingBox;
+
         Character(std::string name, int level, int health, int atk, int speed) {
             this->name = name;
             this->level = level;
@@ -41,27 +43,18 @@ class Animation { //this is tools for controlling animations
         int animation_frame = 0;
         float state = 0;
         
-        int countFrames(const std::string& directory) {
-            int count = 0;
-            for (const auto& entry : std::filesystem::directory_iterator(directory)) {
-                if (entry.is_regular_file()) {
-                    count++;
-                }
-            }
-            return count;
-        }
-        
     public: 
-        float rescale = 1;
-        Animation(std::string texture_dir="", std::string type="", bool individual = true, sf::Sprite* sprite=nullptr, float frame_rate=1, float resize=1){
+        float rescaleX = 1;
+        float rescaleY = 1;
+        Animation(std::string texture_dir="", std::string type="", bool individual = true, int numberOfFrame=1, sf::Sprite* sprite=nullptr, float frame_rate=1, float resize=1){
             this->texture_directory = texture_dir;
             this->individual = individual;
             this->type = type;
             this->frame_rate = frame_rate;
             this->sprite = sprite;
+            this->animation_frame = numberOfFrame;
             
             if (individual && type != "") {
-                this->animation_frame = countFrames(texture_directory + "/" + type);
                 textures.resize(animation_frame);
                 for (int i = 0; i < animation_frame; i++) {
                     if (!textures[i].loadFromFile(texture_directory + "/" + type + "/" + std::to_string(i) + ".png")) {
@@ -70,16 +63,44 @@ class Animation { //this is tools for controlling animations
                 }
 
                 sprite->setOrigin(textures[0].getSize().x / 2.f, textures[0].getSize().y / 2.f);
-                rescale = (64.f / (float)textures[0].getSize().x) * resize;
+                rescaleX = (64.f / (float)textures[0].getSize().x) * resize;
+                rescaleY = (64.f / (float)textures[0].getSize().y) * resize;
+            }
+            else{
+                if (type == "") {
+                    return;
+                }
+                textures.resize(1);
+                if (!textures[0].loadFromFile(texture_directory + "/" + type + ".png")) {
+                    throw std::runtime_error("Failed to load texture: " + texture_directory + "/" + type + ".png");
+                }
+                sprite->setTexture(textures[0]);
+                sprite->setOrigin((textures[0].getSize().x/animation_frame) / 2.f, textures[0].getSize().y / 2.f);
+                rescaleX = (64.f / ((float)textures[0].getSize().x)/animation_frame) * resize;
+                rescaleY = (64.f / (float)textures[0].getSize().y) * resize;
             }
         }
 
         void animate(float animationPerSeccond = 1.0f){
-            sprite->setTexture(textures[(int)state % animation_frame]);
-            if (state >= animation_frame) {
-                state = 0;
+            if (individual){
+                sprite->setTexture(textures[(int)state % animation_frame]);
+                if (state >= animation_frame) {
+                    state = 0;
+                }
+                state += (frame_rate * animation_frame * animationPerSeccond);
             }
-            state += (frame_rate * animation_frame * animationPerSeccond);
+            else{
+                sprite->setTextureRect(sf::IntRect(
+                    ((int)state % animation_frame) * (textures[0].getSize().x / animation_frame),
+                    0,
+                    (textures[0].getSize().x / animation_frame),
+                    textures[0].getSize().y
+                ));
+                if (state >= animation_frame) {
+                    state = 0;
+                }
+                state += (frame_rate * animation_frame * animationPerSeccond);
+            }
         }
 };
 
@@ -90,18 +111,24 @@ class Player: public Character {
         float frame_rate;
         Animation run_animation;
         Animation idle_animation;
+        Animation atk_animation;
+        Animation runAndGun_animation;
+
         float scaleX = 1;
     
     public:
         sf::Sprite sprite;
-        sf::RectangleShape boundingBox = sf::RectangleShape(sf::Vector2f(30, 70));
-
+        
         Player(float frame_rate, float initPosX=0, float initPosY=0): Character("Emma", 1, 100, 10, 100) {
             this->frame_rate = frame_rate;
-            this->run_animation = Animation("../assets/sprite/player", "run", true, &this->sprite, this->frame_rate, 2.0f);
-            this->idle_animation = Animation("../assets/sprite/player", "idle", true, &this->sprite, this->frame_rate, 2.0f);
-
-            scaleX = idle_animation.rescale;
+            
+            this->run_animation = Animation("../assets/sprite/player", "run", true, 14, &this->sprite, this->frame_rate, 2.0f);
+            this->idle_animation = Animation("../assets/sprite/player", "idle", true, 4, &this->sprite, this->frame_rate, 2.0f);
+            this->atk_animation = Animation("../assets/sprite/player", "atk", true, 4, &this->sprite, this->frame_rate, 0.2f);
+            this->runAndGun_animation = Animation("../assets/sprite/player", "run&gun", true, 6, &this->sprite, this->frame_rate, 0.2f);
+            this->boundingBox = sf::RectangleShape(sf::Vector2f(30, 70));
+            
+            scaleX = idle_animation.rescaleX;
             
             boundingBox.setOutlineColor(sf::Color::Red);
             boundingBox.setOutlineThickness(1);
@@ -114,7 +141,7 @@ class Player: public Character {
 
         void update(){
             sprite.setPosition(posX, posY);
-            sprite.setScale(scaleX, run_animation.rescale);
+            sprite.setScale(scaleX, run_animation.rescaleY);
             boundingBox.setPosition(sprite.getPosition().x, sprite.getPosition().y);
         }
 
@@ -125,15 +152,84 @@ class Player: public Character {
 
         void moveRight(){
             run_animation.animate(0.7);
-            scaleX = run_animation.rescale;
+            scaleX = run_animation.rescaleX;
             update();
         }
 
         void moveLeft(){
             run_animation.animate(0.7);
-            scaleX = -run_animation.rescale;
+            scaleX = -run_animation.rescaleX;
             update();
         }
+
+        void runAndGunRight(){
+            runAndGun_animation.animate(2.0);
+            // scaleX = runAndGun_animation.rescale;
+            update();
+        }
+
+        void runAndGunLeft(){
+            runAndGun_animation.animate(2.5);
+            // scaleX = -runAndGun_animation.rescale;
+            update();
+        } 
+
+        void atk(){
+            atk_animation.animate(2.5);
+        }
 };
+
+class Zombie: public Character{
+    private: 
+        float frame_rate;
+        Animation run_animation;
+        Animation idle_animation;
+        Animation atk_animation;
+        Animation death_animation;
+        Animation hurt_animation;
+
+        float scaleX = 1;
+    public:
+        sf::Sprite sprite;
+        Zombie(std::string name, std::string texture_dir, bool textureIndividual, float frame_rate, float initPosX=0, float initPosY=0): Character(name, 1, 100, 10, 100) {
+            this->frame_rate = frame_rate;
+            
+            this->run_animation = Animation(texture_dir, "walk", textureIndividual, 10, &this->sprite, this->frame_rate, 2.0f);
+            this->idle_animation = Animation(texture_dir, "idle", textureIndividual, 6, &this->sprite, this->frame_rate, 2.0f);
+            this->atk_animation = Animation(texture_dir, "atk", textureIndividual, 5, &this->sprite, this->frame_rate, 0.2f);
+            this->death_animation = Animation(texture_dir, "dead", textureIndividual, 5, &this->sprite, this->frame_rate, 0.2f);
+            this->hurt_animation = Animation(texture_dir, "hurt", textureIndividual, 4, &this->sprite, this->frame_rate, 0.2f);
+            this->boundingBox = sf::RectangleShape(sf::Vector2f(30, 70));
+
+            scaleX = idle_animation.rescaleX;
+            
+            boundingBox.setOutlineColor(sf::Color::Red);
+            boundingBox.setOutlineThickness(1);
+            boundingBox.setFillColor(sf::Color::Transparent);
+            boundingBox.setOrigin(boundingBox.getSize().x / 2, boundingBox.getSize().y / 2); 
+            posX = initPosX;
+            posY = initPosY;
+            update();
+        }
+
+        void update(){
+            sprite.setPosition(posX, posY);
+            sprite.setScale(scaleX, run_animation.rescaleY);
+            boundingBox.setPosition(sprite.getPosition().x, sprite.getPosition().y);
+        }
+};
+
+class Zombie1: public Zombie {
+    public:
+        Zombie1(float frame_rate, float initPosX=0, float initPosY=0): Zombie("Zombie1", "../assets/sprite/zombie/Zombie_1", false, frame_rate, initPosX, initPosY) {
+            update();
+        }
+
+        void update() override {
+            Zombie::update();
+        }
+};
+
+
 
 #endif
