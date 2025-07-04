@@ -7,25 +7,10 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(SFML 2.5 REQUIRED COMPONENTS graphics window system audio)
 find_package(yaml-cpp REQUIRED)
 
-include_directories(
-	scene
-	src/scenes
-	src/system/include
-	src/tools/include
-)
+include_directories(src)
 
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-set(SYSTEM
-	src/system/Game.cpp
-)
-
-set(SOURCES
-	src/main.cpp
-	${SYSTEM}
-)
-
-
-# add_executable(final_project ${SOURCES})
 add_executable(Safe_Zone ${SOURCES})
 
 #link library
@@ -38,6 +23,7 @@ target_link_libraries(Safe_Zone
 	yaml-cpp
 )
 
-
-# Link libraries if needed
-# target_link_libraries(final_project PRIVATE some_library)
+add_custom_command(TARGET Safe_Zone POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:Safe_Zone>/assets
+)

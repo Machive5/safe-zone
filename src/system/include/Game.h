@@ -51,7 +51,7 @@ public:
      *   state from the Game class, thus allowing all behaviour of a
      *   state to be implemented in the corresponding class without
      *   having to touch any other code.
-     */
+     */ // Seed the random number generator
     void start ();
 
 private:

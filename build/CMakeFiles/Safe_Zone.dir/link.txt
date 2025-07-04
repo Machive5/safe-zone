@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/Safe_Zone.dir/src/main.cpp.o CMakeFiles/Safe_Zone.dir/src/system/Game.cpp.o  -o Safe_Zone  /usr/lib/x86_64-linux-gnu/libsfml-graphics.so.2.5.1 /usr/lib/x86_64-linux-gnu/libsfml-window.so.2.5.1 /usr/lib/x86_64-linux-gnu/libsfml-audio.so.2.5.1 /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2 /usr/lib/x86_64-linux-gnu/libsfml-system.so.2.5.1 

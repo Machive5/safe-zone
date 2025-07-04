@@ -1,3 +1,0 @@
-/home/abrar/Documents/PROGLAN/final_project/build/CMakeFiles/rebuild_cache.dir
-/home/abrar/Documents/PROGLAN/final_project/build/CMakeFiles/edit_cache.dir
-/home/abrar/Documents/PROGLAN/final_project/build/CMakeFiles/Safe_Zone.dir

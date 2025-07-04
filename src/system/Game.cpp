@@ -1,6 +1,6 @@
 #include "include/constants.h"
 #include "include/Game.h"
-#include "../scenes/Scene1.hpp"
+#include "scenes/include/scene1.hpp"
 
 
 using namespace sf;
@@ -27,7 +27,7 @@ Game :: Game (std::string const & title,
 {
     Scene1 * scene1 = new Scene1(&window, 1.0 / fps, "../assets/scene/scene1/ground.png", "../assets/scene/scene1/", "layer");
     states.insert({ SCENE1, std::unique_ptr<State>(scene1) });
-
+    std::srand(std::time(nullptr));
 }
 
 

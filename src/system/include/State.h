@@ -24,7 +24,7 @@ public:
      * check for that event inside this function.
      */
     virtual void handle_event (sf::Event event) = 0;
-
+ 
     /*
      * The 'update' function is called every iteration of the
      * game loop, no more and no less.
